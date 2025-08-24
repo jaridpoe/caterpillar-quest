@@ -15,9 +15,16 @@ jobs:
         run: |
           zip -r game.love . -x ".git/*" ".github/*"
 
-      - name: Clone love.js and copy build files
+      - name: Clone love.js and build
         run: |
           git clone https://github.com/Davidobot/love.js.git
+          cd love.js
+          npm install
+          npm run build
+          cd ..
+
+      - name: Copy love.js build files
+        run: |
           mkdir lovejs
           cp love.js/build/* lovejs/
           cp love.js/index.html lovejs/
