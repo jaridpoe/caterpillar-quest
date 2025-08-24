@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir publish
           cp game.love publish/
-          cp lovejs/* publish/
+          cp -r lovejs/* publish/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
