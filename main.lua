@@ -37,6 +37,10 @@ function love.load()
     moleInterval = 3.5 -- Moles appear less frequently
 
     math.randomseed(os.time())
+
+    branches = {}
+
+    generateBranches()
 end
 
 function spawnLadybug()
@@ -66,6 +70,26 @@ function spawnMole()
         vy = math.random(-60, 60) / 30 -- random vertical speed
     }
     table.insert(moles, mole)
+end
+
+function generateBranches()
+    branches = {}
+    local branchColors = {
+        {0.55, 0.27, 0.07},
+        {0.45, 0.22, 0.08},
+        {0.60, 0.32, 0.12}
+    }
+    for i = 1, 60 do
+        local branch = {
+            x = math.random(0, love.graphics.getWidth()),
+            y = math.random(0, love.graphics.getHeight()),
+            w = math.random(30, 80),
+            h = math.random(6, 14),
+            color = branchColors[math.random(1, #branchColors)],
+            angle = math.random() * math.pi * 2
+        }
+        table.insert(branches, branch)
+    end
 end
 
 function love.update(dt)
@@ -263,6 +287,8 @@ function restartGame()
 
     moles = {}
     moleTimer = 0
+
+    generateBranches()
 end
 
 function love.keypressed(key)
@@ -272,6 +298,20 @@ function love.keypressed(key)
 end
 
 function love.draw()
+    -- Draw blue background
+    love.graphics.setColor(0.4, 0.7, 1)
+    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+
+    -- Draw pixel branches
+    for _, branch in ipairs(branches) do
+        love.graphics.setColor(branch.color)
+        love.graphics.push()
+        love.graphics.translate(branch.x, branch.y)
+        love.graphics.rotate(branch.angle)
+        love.graphics.rectangle("fill", 0, 0, branch.w, branch.h)
+        love.graphics.pop()
+    end
+
     -- Color gradient: head is dark green, tail is light green
     local headColor = {0.1, 0.5, 0.1}
     local tailColor = {0.7, 0.9, 0.2}
