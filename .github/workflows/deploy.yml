@@ -11,6 +11,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get short commit hash
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Create publish directory
         run: mkdir publish
 
@@ -23,7 +27,7 @@ jobs:
       - name: Copy love.js engine files
         run: cp -r love.js/src/* publish/
 
-      - name: Create index.html
+      - name: Create index.html with cache busting
         run: |
           cat > publish/index.html <<EOF
           <!DOCTYPE html>
@@ -37,7 +41,7 @@ jobs:
             </style>
           </head>
           <body>
-            <script src="game.js"></script>
+            <script src="game.js?v=${{ steps.vars.outputs.sha_short }}"></script>
             <script>
               window.Module = {
                 arguments: ['game.love'],
