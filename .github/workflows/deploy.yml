@@ -17,22 +17,14 @@ jobs:
       - name: Zip game files into game.love
         run: zip -r publish/game.love . -x ".git/*" ".github/*"
 
-      - name: Clone love.js and list files
-        run: |
-          git clone https://github.com/Davidobot/love.js.git
-          echo "Contents of love.js directory:"
-          ls -la love.js/
-          echo "Contents of love.js/src directory (if exists):"
-          ls -la love.js/src || echo "src directory not found"
-          echo "Contents of love.js/dist directory (if exists):"
-          ls -la love.js/dist || echo "dist directory not found"
-          echo "Contents of love.js/build directory (if exists):"
-          ls -la love.js/build || echo "build directory not found"
+      - name: Clone love.js
+        run: git clone https://github.com/Davidobot/love.js.git
 
       - name: Copy love.js files
         run: |
-          mkdir -p publish
-          cp -r love.js/dist/* publish/ || cp -r love.js/build/* publish/ || cp -r love.js/release/* publish/
+          cp -r love.js/src/compat publish/
+          cp -r love.js/src/release publish/
+          cp love.js/src/game.js publish/
 
       - name: Create index.html
         run: |
