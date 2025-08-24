@@ -15,13 +15,12 @@ jobs:
         run: |
           zip -r game.love . -x ".git/*" ".github/*"
 
-      - name: Download love.js release
+      - name: Clone love.js and copy build files
         run: |
+          git clone https://github.com/Davidobot/love.js.git
           mkdir lovejs
-          wget https://github.com/Davidobot/love.js/releases/download/v11.4.0/love.js -O lovejs/love.js
-          wget https://github.com/Davidobot/love.js/releases/download/v11.4.0/love.wasm -O lovejs/love.wasm
-          wget https://github.com/Davidobot/love.js/releases/download/v11.4.0/love.worker.js -O lovejs/love.worker.js
-          wget https://github.com/Davidobot/love.js/releases/download/v11.4.0/index.html -O lovejs/index.html
+          cp love.js/build/* lovejs/
+          cp love.js/index.html lovejs/
 
       - name: Prepare publish folder
         run: |
