@@ -35,22 +35,37 @@ jobs:
               <meta charset="utf-8">
               <title>Caterpillar Quest</title>
               <style>
-                body { margin: 0; background: black; }
+                body { 
+                  margin: 0;
+                  background: black;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                }
                 #canvas { 
-                  position: absolute;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%);
+                  max-width: 100%;
+                  max-height: 100%;
                 }
               </style>
             </head>
             <body>
               <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-              <script>
-                var Module = {};
-                Module.canvas = document.getElementById('canvas');
+              <script type="text/javascript">
+                // Initialize Module before loading game.js
+                var Module = {
+                  TOTAL_MEMORY: 268435456,
+                  arguments: ["./game.love"],
+                  printErr: function(text) { console.error(text); },
+                  canvas: document.getElementById('canvas'),
+                  noInitialRun: true,
+                  noExitRuntime: true,
+                  preRun: [],
+                  postRun: [],
+                  print: function(text) { console.log(text); }
+                };
               </script>
-              <script src="game.js"></script>
+              <script type="text/javascript" src="release/love.js"></script>
             </body>
           </html>
           EOF
