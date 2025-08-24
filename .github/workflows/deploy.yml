@@ -20,7 +20,14 @@ jobs:
       - name: Clone love.js and list files
         run: |
           git clone https://github.com/Davidobot/love.js.git
+          echo "Contents of love.js directory:"
           ls -la love.js/
+          echo "Contents of love.js/src directory (if exists):"
+          ls -la love.js/src || echo "src directory not found"
+          echo "Contents of love.js/dist directory (if exists):"
+          ls -la love.js/dist || echo "dist directory not found"
+          echo "Contents of love.js/build directory (if exists):"
+          ls -la love.js/build || echo "build directory not found"
 
       - name: Copy love.js files
         run: |
