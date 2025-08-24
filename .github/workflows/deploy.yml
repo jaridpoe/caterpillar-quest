@@ -28,7 +28,6 @@ jobs:
         run: |
           mkdir lovejs
           cp -r love.js/src/* lovejs/
-          cp love.js/src/index.html lovejs/index.html
 
       - name: Create index.html
         run: |
