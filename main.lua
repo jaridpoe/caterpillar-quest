@@ -18,9 +18,9 @@ function love.load()
         }
     end
 
-    rocks = {}
-    rockTimer = 0
-    rockInterval = 1.2
+    ladybugs = {}
+    ladybugTimer = 0
+    ladybugInterval = 1.2
 
     grass = {}
     grassTimer = 0
@@ -39,22 +39,13 @@ function love.load()
     math.randomseed(os.time())
 end
 
-function spawnRock()
-    local rock = {
+function spawnLadybug()
+    local ladybug = {
         x = love.graphics.getWidth() + 30,
         y = math.random(60, love.graphics.getHeight() - 60),
-        radius = math.random(18, 32),
-        points = {}
+        radius = 16
     }
-    local vertexCount = 8
-    for i = 1, vertexCount do
-        local angle = (2 * math.pi / vertexCount) * i
-        local radius = rock.radius + math.random(-6, 6)
-        local px = math.cos(angle) * radius
-        local py = math.sin(angle) * radius
-        table.insert(rock.points, {px, py})
-    end
-    table.insert(rocks, rock)
+    table.insert(ladybugs, ladybug)
 end
 
 function spawnGrass()
@@ -114,20 +105,20 @@ function love.update(dt)
         seg.x = seg.x + math.sin(worm.angle + i * 0.5) * worm.wiggleAmount * 4
     end
 
-    -- Spawn rocks
-    rockTimer = rockTimer + dt
-    if rockTimer > rockInterval then
-        spawnRock()
-        rockTimer = 0
+    -- Spawn ladybugs
+    ladybugTimer = ladybugTimer + dt
+    if ladybugTimer > ladybugInterval then
+        spawnLadybug()
+        ladybugTimer = 0
     end
 
-    for i, rock in ipairs(rocks) do
-        rock.x = rock.x - 2
+    for i, ladybug in ipairs(ladybugs) do
+        ladybug.x = ladybug.x - 2
     end
 
-    for i = #rocks, 1, -1 do
-        if rocks[i].x < -rocks[i].radius then
-            table.remove(rocks, i)
+    for i = #ladybugs, 1, -1 do
+        if ladybugs[i].x < -ladybugs[i].radius then
+            table.remove(ladybugs, i)
         end
     end
 
@@ -171,17 +162,16 @@ function love.update(dt)
         end
     end
 
-    -- Collision detection (rocks)
-    for i = #rocks, 1, -1 do
-        local rock = rocks[i]
-        local dx = head.x - rock.x
-        local dy = head.y - rock.y
+    -- Collision detection (ladybugs)
+    for i = #ladybugs, 1, -1 do
+        local ladybug = ladybugs[i]
+        local dx = head.x - ladybug.x
+        local dy = head.y - ladybug.y
         local dist = math.sqrt(dx * dx + dy * dy)
-        if dist < worm.radius + rock.radius then
+        if dist < worm.radius + ladybug.radius then
             table.remove(worm.segments, #worm.segments)
             lives = lives - 1
-            -- Remove the rock so the worm passes through
-            table.remove(rocks, i)
+            table.remove(ladybugs, i)
             if lives == 0 or #worm.segments == 0 then
                 gameState = "gameover"
             end
@@ -257,9 +247,9 @@ function restartGame()
         }
     end
 
-    rocks = {}
-    rockTimer = 0
-    rockInterval = 1.2
+    ladybugs = {}
+    ladybugTimer = 0
+    ladybugInterval = 1.2
 
     grass = {}
     grassTimer = 0
@@ -319,20 +309,24 @@ function love.draw()
     love.graphics.circle("fill", head.x - 8, head.y - worm.radius - 12, 2)
     love.graphics.circle("fill", head.x + 8, head.y - worm.radius - 12, 2)
 
-    -- Draw rocks as irregular polygons
-    love.graphics.setColor(0.5, 0.4, 0.3)
-    for _, rock in ipairs(rocks) do
-        local points = {}
-        local vertexCount = 8
-        for i = 1, vertexCount do
-            local angle = (2 * math.pi / vertexCount) * i
-            local radius = rock.radius + math.random(-6, 6)
-            local px = rock.x + math.cos(angle) * radius
-            local py = rock.y + math.sin(angle) * radius
-            table.insert(points, px)
-            table.insert(points, py)
+    -- Draw ladybugs
+    for _, ladybug in ipairs(ladybugs) do
+        -- Body
+        love.graphics.setColor(0.9, 0.1, 0.1)
+        love.graphics.circle("fill", ladybug.x, ladybug.y, ladybug.radius)
+        -- Head
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.circle("fill", ladybug.x - ladybug.radius * 0.7, ladybug.y, ladybug.radius * 0.5)
+        -- Spots
+        love.graphics.setColor(0, 0, 0)
+        for s = -1, 1 do
+            love.graphics.circle("fill", ladybug.x + s * ladybug.radius * 0.4, ladybug.y - ladybug.radius * 0.3, 3)
+            love.graphics.circle("fill", ladybug.x + s * ladybug.radius * 0.3, ladybug.y + ladybug.radius * 0.2, 2)
         end
-        love.graphics.polygon("fill", points)
+        -- Antennae
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.line(ladybug.x - ladybug.radius * 0.7, ladybug.y - 4, ladybug.x - ladybug.radius * 0.7 - 6, ladybug.y - 10)
+        love.graphics.line(ladybug.x - ladybug.radius * 0.7, ladybug.y + 4, ladybug.x - ladybug.radius * 0.7 - 6, ladybug.y + 10)
     end
 
     -- Draw grass
