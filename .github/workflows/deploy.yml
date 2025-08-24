@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir lovejs
           cp -r love.js/src/* lovejs/
-          cp love.js/template.html lovejs/index.html
+          cp love.js/src/template.html lovejs/index.html
 
       - name: Prepare publish folder
         run: |
