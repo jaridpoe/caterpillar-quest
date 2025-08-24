@@ -30,6 +30,21 @@ jobs:
           cp -r love.js/src/* lovejs/
           cp love.js/src/index.html lovejs/index.html
 
+      - name: Create index.html
+        run: |
+          cat > lovejs/index.html <<EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>LOVE2D Game</title>
+          </head>
+          <body>
+            <script src="game.js"></script>
+          </body>
+          </html>
+          EOF
+
       - name: Prepare publish folder
         run: |
           mkdir publish
