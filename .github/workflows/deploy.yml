@@ -19,15 +19,16 @@ jobs:
         run: |
           git clone https://github.com/Davidobot/love.js.git
 
+
+      - name: List files in love.js/src
+        run: |
+          ls -l love.js/src/
+
       - name: Copy love.js files
         run: |
           mkdir lovejs
           cp -r love.js/src/* lovejs/
           cp love.js/src/index.html lovejs/index.html
-
-      - name: List files in love.js/src
-        run: |
-          ls -l love.js/src/
 
       - name: Prepare publish folder
         run: |
