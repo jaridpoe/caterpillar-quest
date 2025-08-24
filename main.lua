@@ -282,10 +282,19 @@ function love.keypressed(key)
 end
 
 function love.draw()
-    -- Draw caterpillar segments with legs
+    -- Color gradient: head is dark green, tail is light green
+    local headColor = {0.1, 0.5, 0.1}
+    local tailColor = {0.7, 0.9, 0.2}
+    local segmentCount = #worm.segments
+
     for i, seg in ipairs(worm.segments) do
-        -- Body color
-        love.graphics.setColor(0.7, 0.9, 0.2)
+        -- Interpolate color
+        local t = (i - 1) / math.max(segmentCount - 1, 1)
+        local r = headColor[1] + (tailColor[1] - headColor[1]) * t
+        local g = headColor[2] + (tailColor[2] - headColor[2]) * t
+        local b = headColor[3] + (tailColor[3] - headColor[3]) * t
+
+        love.graphics.setColor(r, g, b)
         love.graphics.circle("fill", seg.x, seg.y, worm.radius)
         -- Draw legs (6 per segment)
         love.graphics.setColor(0.3, 0.2, 0.1)
@@ -300,13 +309,13 @@ function love.draw()
 
     -- Draw caterpillar head (first segment, bigger and with antennae)
     local head = worm.segments[1]
-    love.graphics.setColor(0.8, 1, 0.3)
+    love.graphics.setColor(headColor[1], headColor[2], headColor[3])
     love.graphics.circle("fill", head.x, head.y, worm.radius + 3)
     -- Antennae
     love.graphics.setColor(0.3, 0.2, 0.1)
     love.graphics.line(head.x - 4, head.y - worm.radius - 2, head.x - 8, head.y - worm.radius - 12)
     love.graphics.line(head.x + 4, head.y - worm.radius - 2, head.x + 8, head.y - worm.radius - 12)
-    love.graphics.setColor(0.8, 1, 0.3)
+    love.graphics.setColor(headColor[1], headColor[2], headColor[3])
     love.graphics.circle("fill", head.x - 8, head.y - worm.radius - 12, 2)
     love.graphics.circle("fill", head.x + 8, head.y - worm.radius - 12, 2)
 
