@@ -11,10 +11,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get short commit hash
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Create publish directory
         run: mkdir publish
 
@@ -22,47 +18,40 @@ jobs:
         run: zip -r publish/game.love . -x ".git/*" ".github/*"
 
       - name: Clone love.js
-        run: git clone https://github.com/Davidobot/love.js.git
+        run: |
+          git clone --depth 1 --branch release-11.4 https://github.com/Davidobot/love.js.git
 
-      - name: Copy love.js engine files
-        run: cp -r love.js/src/* publish/
+      - name: Copy love.js files
+        run: |
+          cp -r love.js/release/* publish/
+          mv publish/love.js publish/game.js
 
-      - name: Create index.html with cache busting
+      - name: Create index.html
         run: |
           cat > publish/index.html <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Caterpillar Quest</title>
-            <style>
-              body { margin: 0; padding: 0; background-color: #000; }
-              canvas { display: block; margin: auto; }
-            </style>
-            <script>
-              var Module = {
-                TOTAL_MEMORY: 268435456,
-                errorhandler: null,
-                compatibilitycheck: null,
-                dataFileDownloads: {},
-                arguments: ['./game.love'],
-                printErr: function(text) { console.error(text); },
-                canvas: (function() {
-                  var canvas = document.createElement('canvas');
-                  canvas.addEventListener("webglcontextlost", function(e) {
-                    alert('WebGL context lost. You will need to reload the page.');
-                    e.preventDefault();
-                  }, false);
-                  return canvas;
-                })(),
-                setStatus: function(text) { console.log(text); },
-                monitorRunDependencies: function(left) {}
-              };
-            </script>
-          </head>
-          <body>
-            <script async type="text/javascript" src="game.js?v=${{ steps.vars.outputs.sha_short }}"></script>
-          </body>
+          <!doctype html>
+          <html lang="en-us">
+            <head>
+              <meta charset="utf-8">
+              <title>Caterpillar Quest</title>
+              <style>
+                body { margin: 0; background: black; }
+                #canvas { 
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                }
+              </style>
+            </head>
+            <body>
+              <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+              <script>
+                var Module = {};
+                Module.canvas = document.getElementById('canvas');
+              </script>
+              <script src="game.js"></script>
+            </body>
           </html>
           EOF
 
