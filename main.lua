@@ -68,7 +68,7 @@ function spawnBird()
     local bird = {
         x = love.graphics.getWidth() + 30,
         y = math.random(60, love.graphics.getHeight() - 60),
-        radius = 18,
+        radius = 26, -- Increased size
         vy = math.random(-60, 60) / 30 -- random vertical speed
     }
     table.insert(birds, bird)
@@ -386,21 +386,41 @@ function love.draw()
         love.graphics.rectangle("fill", g.x, g.y, g.width, g.height)
     end
 
-    -- Draw birds
+    -- Draw birds (top-down style)
     for _, bird in ipairs(birds) do
         -- Body
         love.graphics.setColor(0.9, 0.1, 0.1)
         love.graphics.circle("fill", bird.x, bird.y, bird.radius)
-        -- Wings
-        love.graphics.setColor(0.8, 0.1, 0.1)
-        love.graphics.ellipse("fill", bird.x - bird.radius, bird.y, bird.radius, bird.radius / 2)
-        love.graphics.ellipse("fill", bird.x + bird.radius, bird.y, bird.radius, bird.radius / 2)
-        -- Beak
+
+        -- Head (smaller circle, left side)
+        love.graphics.setColor(0.95, 0.2, 0.2)
+        love.graphics.circle("fill", bird.x - bird.radius * 0.8, bird.y, bird.radius * 0.6)
+
+        -- Beak (yellow triangle, left of head)
         love.graphics.setColor(1, 0.8, 0.2)
-        love.graphics.polygon("fill", bird.x + bird.radius, bird.y, bird.x + bird.radius + 10, bird.y - 4, bird.x + bird.radius + 10, bird.y + 4)
-        -- Eye
+        love.graphics.polygon("fill",
+            bird.x - bird.radius * 1.3, bird.y,
+            bird.x - bird.radius * 1.1, bird.y - 8,
+            bird.x - bird.radius * 1.1, bird.y + 8
+        )
+
+        -- Wings (ellipses, animated flap)
+        local flap = math.sin(love.timer.getTime() * 8) * 10
+        love.graphics.setColor(0.8, 0.1, 0.1)
+        love.graphics.ellipse("fill", bird.x, bird.y - bird.radius * 0.5 - flap, bird.radius * 0.8, bird.radius * 0.35)
+        love.graphics.ellipse("fill", bird.x, bird.y + bird.radius * 0.5 + flap, bird.radius * 0.8, bird.radius * 0.35)
+
+        -- Eyes (white with black pupil, both sides)
+        love.graphics.setColor(1, 1, 1)
+        -- Left eye
+        love.graphics.circle("fill", bird.x - bird.radius * 0.95, bird.y - bird.radius * 0.2, 3.5)
         love.graphics.setColor(0, 0, 0)
-        love.graphics.circle("fill", bird.x + bird.radius / 2, bird.y - bird.radius / 3, 2)
+        love.graphics.circle("fill", bird.x - bird.radius * 0.95, bird.y - bird.radius * 0.2, 1.5)
+        -- Right eye
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.circle("fill", bird.x - bird.radius * 0.95, bird.y + bird.radius * 0.2, 3.5)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.circle("fill", bird.x - bird.radius * 0.95, bird.y + bird.radius * 0.2, 1.5)
     end
 
     -- Draw score and lives
