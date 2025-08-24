@@ -36,23 +36,32 @@ jobs:
             <meta charset="utf-8">
             <title>Caterpillar Quest</title>
             <style>
-              body { margin: 0; padding: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
-              canvas { display: block; }
+              body { margin: 0; padding: 0; background-color: #000; }
+              canvas { display: block; margin: auto; }
             </style>
-          </head>
-          <body>
             <script>
-              // Define the Module object BEFORE loading game.js
               var Module = {
-                arguments: ['game.love'],
+                TOTAL_MEMORY: 268435456,
+                errorhandler: null,
+                compatibilitycheck: null,
+                dataFileDownloads: {},
+                arguments: ['./game.love'],
+                printErr: function(text) { console.error(text); },
                 canvas: (function() {
                   var canvas = document.createElement('canvas');
-                  document.body.appendChild(canvas);
+                  canvas.addEventListener("webglcontextlost", function(e) {
+                    alert('WebGL context lost. You will need to reload the page.');
+                    e.preventDefault();
+                  }, false);
                   return canvas;
-                })()
+                })(),
+                setStatus: function(text) { console.log(text); },
+                monitorRunDependencies: function(left) {}
               };
             </script>
-            <script async src="game.js?v=${{ steps.vars.outputs.sha_short }}"></script>
+          </head>
+          <body>
+            <script async type="text/javascript" src="game.js?v=${{ steps.vars.outputs.sha_short }}"></script>
           </body>
           </html>
           EOF
