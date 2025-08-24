@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <title>Caterpillar Quest</title>
   <style>
-    body { margin: 0; padding: 0; background-color: #000; }
-    canvas { display: block; margin: auto; }
+    body { margin: 0; padding: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <script src="game.js?v=0623a34"></script>
   <script>
-    window.Module = {
+    // Define the Module object BEFORE loading game.js
+    var Module = {
       arguments: ['game.love'],
       canvas: (function() {
         var canvas = document.createElement('canvas');
@@ -20,5 +20,6 @@
       })()
     };
   </script>
+  <script async src="game.js?v=4d21611"></script>
 </body>
 </html>
