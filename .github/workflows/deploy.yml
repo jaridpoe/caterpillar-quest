@@ -18,10 +18,10 @@ jobs:
       - name: Download love.js release
         run: |
           mkdir lovejs
-          wget https://github.com/TannerRogalsky/love.js/releases/download/11.4-1/love.js -O lovejs/love.js
-          wget https://github.com/TannerRogalsky/love.js/releases/download/11.4-1/love.wasm -O lovejs/love.wasm
-          wget https://github.com/TannerRogalsky/love.js/releases/download/11.4-1/love.worker.js -O lovejs/love.worker.js
-          wget https://github.com/TannerRogalsky/love.js/releases/download/11.4-1/index.html -O lovejs/index.html
+          wget https://github.com/TannerRogalsky/love.js/releases/download/11.3-0/love.js -O lovejs/love.js
+          wget https://github.com/TannerRogalsky/love.js/releases/download/11.3-0/love.wasm -O lovejs/love.wasm
+          wget https://github.com/TannerRogalsky/love.js/releases/download/11.3-0/love.worker.js -O lovejs/love.worker.js
+          wget https://github.com/TannerRogalsky/love.js/releases/download/11.3-0/index.html -O lovejs/index.html
 
       - name: Prepare publish folder
         run: |
