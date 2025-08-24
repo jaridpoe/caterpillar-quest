@@ -32,15 +32,17 @@ function love.load()
 
     gameState = "play"
 
-    moles = {}
-    moleTimer = 0
-    moleInterval = 3.5 -- Moles appear less frequently
+    birds = {}
+    birdTimer = 0
+    birdInterval = 3.5 -- Birds appear less frequently
 
     math.randomseed(os.time())
 
     branches = {}
 
     generateBranches()
+
+    birdsStarted = false
 end
 
 function spawnLadybug()
@@ -62,14 +64,14 @@ function spawnGrass()
     table.insert(grass, g)
 end
 
-function spawnMole()
-    local mole = {
+function spawnBird()
+    local bird = {
         x = love.graphics.getWidth() + 30,
         y = math.random(60, love.graphics.getHeight() - 60),
-        radius = 22,
+        radius = 18,
         vy = math.random(-60, 60) / 30 -- random vertical speed
     }
-    table.insert(moles, mole)
+    table.insert(birds, bird)
 end
 
 function generateBranches()
@@ -163,26 +165,33 @@ function love.update(dt)
         end
     end
 
-    -- Spawn moles only if worm has 10 or more segments
-    if #worm.segments >= 10 then
-        moleTimer = moleTimer + dt
-        if moleTimer > moleInterval then
-            spawnMole()
-            moleTimer = 0
+    -- Start spawning birds when worm reaches 10 segments
+    if not birdsStarted and #worm.segments >= 10 then
+        birdsStarted = true
+    end
+
+    -- Spawn birds if birdsStarted is true
+    if birdsStarted then
+        birdTimer = birdTimer + dt
+        if birdTimer > birdInterval then
+            spawnBird()
+            birdTimer = 0
         end
-    else
-        moleTimer = 0
-        moles = {}
     end
 
-    -- Move moles left
-    for i, mole in ipairs(moles) do
-        mole.x = mole.x - 2
+    -- Move birds left
+    for i, bird in ipairs(birds) do
+        bird.x = bird.x - 2
+        bird.y = bird.y + bird.vy
+        -- Bounce off top/bottom
+        if bird.y < 40 or bird.y > love.graphics.getHeight() - 40 then
+            bird.vy = -bird.vy
+        end
     end
 
-    for i = #moles, 1, -1 do
-        if moles[i].x < -moles[i].radius then
-            table.remove(moles, i)
+    for i = #birds, 1, -1 do
+        if birds[i].x < -birds[i].radius then
+            table.remove(birds, i)
         end
     end
 
@@ -230,20 +239,20 @@ function love.update(dt)
         end
     end
 
-    -- Collision detection (moles)
-    for i = #moles, 1, -1 do
-        local mole = moles[i]
-        local dx = worm.segments[1].x - mole.x
-        local dy = worm.segments[1].y - mole.y
+    -- Collision detection (birds)
+    for i = #birds, 1, -1 do
+        local bird = birds[i]
+        local dx = worm.segments[1].x - bird.x
+        local dy = worm.segments[1].y - bird.y
         local dist = math.sqrt(dx * dx + dy * dy)
-        if dist < worm.radius + mole.radius then
+        if dist < worm.radius + bird.radius then
             -- Remove 3 segments and 3 lives (or as many as possible)
             local removeCount = math.min(3, #worm.segments)
             for _ = 1, removeCount do
                 table.remove(worm.segments, #worm.segments)
                 lives = lives - 1
             end
-            table.remove(moles, i)
+            table.remove(birds, i)
             if lives <= 0 or #worm.segments == 0 then
                 gameState = "gameover"
             end
@@ -285,10 +294,12 @@ function restartGame()
 
     gameState = "play"
 
-    moles = {}
-    moleTimer = 0
+    birds = {}
+    birdTimer = 0
 
     generateBranches()
+
+    birdsStarted = false
 end
 
 function love.keypressed(key)
@@ -375,13 +386,21 @@ function love.draw()
         love.graphics.rectangle("fill", g.x, g.y, g.width, g.height)
     end
 
-    -- Draw moles
-    love.graphics.setColor(0.5, 0.3, 0.1)
-    for _, mole in ipairs(moles) do
-        love.graphics.circle("fill", mole.x, mole.y, mole.radius)
-        love.graphics.setColor(0.3, 0.2, 0.1)
-        love.graphics.circle("fill", mole.x, mole.y + mole.radius / 2, mole.radius / 2)
-        love.graphics.setColor(0.5, 0.3, 0.1)
+    -- Draw birds
+    for _, bird in ipairs(birds) do
+        -- Body
+        love.graphics.setColor(0.9, 0.1, 0.1)
+        love.graphics.circle("fill", bird.x, bird.y, bird.radius)
+        -- Wings
+        love.graphics.setColor(0.8, 0.1, 0.1)
+        love.graphics.ellipse("fill", bird.x - bird.radius, bird.y, bird.radius, bird.radius / 2)
+        love.graphics.ellipse("fill", bird.x + bird.radius, bird.y, bird.radius, bird.radius / 2)
+        -- Beak
+        love.graphics.setColor(1, 0.8, 0.2)
+        love.graphics.polygon("fill", bird.x + bird.radius, bird.y, bird.x + bird.radius + 10, bird.y - 4, bird.x + bird.radius + 10, bird.y + 4)
+        -- Eye
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.circle("fill", bird.x + bird.radius / 2, bird.y - bird.radius / 3, 2)
     end
 
     -- Draw score and lives
