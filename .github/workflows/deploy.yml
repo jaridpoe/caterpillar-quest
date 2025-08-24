@@ -19,7 +19,7 @@ jobs:
 
       - name: Clone love.js
         run: |
-          git clone --depth 1 --branch release-11.4 https://github.com/Davidobot/love.js.git
+          git clone https://github.com/Davidobot/love.js.git
 
       - name: Copy love.js files
         run: |
