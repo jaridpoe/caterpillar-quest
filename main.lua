@@ -323,6 +323,16 @@ function love.draw()
         love.graphics.pop()
     end
 
+    -- If the worm has no segments, show the restart menu
+    if not worm.segments[1] then
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("GAME OVER", 0, love.graphics.getHeight()/2 - 40, love.graphics.getWidth(), "center")
+        love.graphics.printf("Press SPACE to restart", 0, love.graphics.getHeight()/2, love.graphics.getWidth(), "center")
+        return
+    end
+
     -- Color gradient: head is dark green, tail is light green
     local headColor = {0.1, 0.5, 0.1}
     local tailColor = {0.7, 0.9, 0.2}
