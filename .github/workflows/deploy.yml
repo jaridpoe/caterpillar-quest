@@ -17,14 +17,15 @@ jobs:
       - name: Zip game files into game.love
         run: zip -r publish/game.love . -x ".git/*" ".github/*"
 
-      - name: Clone love.js
+      - name: Clone love.js and list files
         run: |
           git clone https://github.com/Davidobot/love.js.git
+          ls -la love.js/
 
       - name: Copy love.js files
         run: |
-          cp -r love.js/release/* publish/
-          mv publish/love.js publish/game.js
+          mkdir -p publish
+          cp -r love.js/dist/* publish/ || cp -r love.js/build/* publish/ || cp -r love.js/release/* publish/
 
       - name: Create index.html
         run: |
