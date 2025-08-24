@@ -22,7 +22,7 @@ jobs:
       - name: Copy love.js files
         run: |
           mkdir lovejs
-          cp love.js/src/* lovejs/
+          cp -r love.js/src/* lovejs/
           cp love.js/index.html lovejs/
 
       - name: Prepare publish folder
