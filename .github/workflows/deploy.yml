@@ -3,69 +3,90 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup
-        run: |
-          mkdir -p publish
-          git clone https://github.com/Davidobot/love.js.git
-
-      - name: Create game.love
-        run: zip -r publish/game.love main.lua conf.lua *.png *.wav *.mp3 *.ogg -x ".git/*" ".github/*" "love.js/*"
-      
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.37  # Specify a version that works with love.js
+          version: latest
 
-      - name: Process love.js src files
+      - name: Verify Emscripten
         run: |
-          # Find where emscripten is installed by the GitHub Action
-          which emcc
+          emcc --version
+          echo "Emscripten cache location: $EM_CACHE"
+
+      - name: Create game.love
+        run: |
+          mkdir -p build
+          zip -r build/game.love main.lua conf.lua *.lua *.png *.jpg *.wav *.mp3 *.ogg -x ".git/*" ".github/*"
+
+      - name: Clone love.js
+        run: git clone https://github.com/Davidobot/love.js.git
+
+      - name: Build web version
+        run: |
+          # Modify the build script to not try sourcing emsdk_env.sh (already set by the GitHub Action)
+          sed -i 's|source ../publish/emsdk_env.sh|# Environment already set by GitHub Action|g' love.js/build_lovejs.sh
           
-          # Create a temporary wrapper script to fix the build process
-          cat > build_wrapper.sh <<EOF
-          #!/bin/bash
-          # Skip the emsdk_env.sh sourcing in the original script
+          # Make the build script executable
+          chmod +x love.js/build_lovejs.sh
+          
+          # Run the build script with our game.love file
           cd love.js
-          sed -i 's|source ../publish/emsdk_env.sh|# Already sourced by GitHub Action|g' build_lovejs.sh
-          chmod +x build_lovejs.sh
-          ./build_lovejs.sh ../publish/game.love ../publish
-          EOF
-          
-          # Make it executable and run it
-          chmod +x build_wrapper.sh
-          ./build_wrapper.sh
-          
-          # List the generated files
-          ls -la publish/
+          ./build_lovejs.sh ../build/game.love ../build/web
 
-      - name: Create index.html
+      - name: Create custom index.html
         run: |
-          cat > publish/index.html <<EOF
+          cat > build/web/index.html << 'EOF'
           <!doctype html>
-          <html>
+          <html lang="en-us">
             <head>
               <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
               <title>Caterpillar Quest</title>
-              <style>body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh}</style>
+              <style>
+                body { 
+                  margin: 0;
+                  padding: 0;
+                  background-color: #000;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                  overflow: hidden;
+                }
+                canvas {
+                  display: block;
+                  max-width: 100%;
+                  max-height: 100vh;
+                }
+              </style>
             </head>
             <body>
-              <canvas id="canvas" width="1024" height="768"></canvas>
-              <script>var Module={canvas:document.getElementById('canvas')};</script>
+              <canvas id="canvas"></canvas>
+              <script>
+                var Module = {
+                  canvas: document.getElementById('canvas'),
+                  onRuntimeInitialized: function() {
+                    console.log("LÖVE game initialized!");
+                  }
+                };
+              </script>
               <script src="love.js"></script>
             </body>
           </html>
           EOF
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GH_PAT }}
-          publish_dir: ./publish
+          publish_dir: ./build/web
+          force_orphan: true
