@@ -1,94 +1,49 @@
-name: Deploy LOVE2D Game to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create publish directory
-        run: mkdir -p publish
-
-      - name: Clone love.js
-        run: git clone https://github.com/Davidobot/love.js.git
-
-      - name: Examine love.js sample files
+      - name: Setup
         run: |
-          # Look at the sample files to see how they work
-          ls -la love.js/sample/
-          cat love.js/sample/index.html || echo "No sample index.html found"
+          mkdir -p publish
+          git clone https://github.com/Davidobot/love.js.git
 
-      - name: Copy love.js files
+      - name: Create game.love
+        run: zip -r publish/game.love main.lua conf.lua *.png *.wav *.mp3 *.ogg -x ".git/*" ".github/*" "love.js/*"
+
+      - name: Copy engine files
         run: |
-          # Use the pre-built sample files instead of src
-          cp -r love.js/sample/love.js publish/
-          cp -r love.js/sample/love.worker.js publish/ || true
-          cp -r love.js/sample/love.wasm publish/ || true
-          cp -r love.js/sample/theme publish/ || true
-          # Debug output
-          echo "Contents of publish directory:"
-          ls -la publish/
+          cp love.js/src/game.js publish/love.js
+          cp -r love.js/src/compat publish/
+          cp -r love.js/src/release publish/
 
-      - name: Zip game files into game.love
-        run: |
-          # Only include game files
-          zip -r publish/game.love \
-            main.lua \
-            conf.lua \
-            *.png \
-            *.wav \
-            *.mp3 \
-            *.ogg \
-            -x "love.js/*" \
-            -x ".git/*" \
-            -x ".github/*"
-
-      - name: Create index.html based on sample
+      - name: Create index.html
         run: |
           cat > publish/index.html <<EOF
           <!doctype html>
-          <html lang="en-us">
+          <html>
             <head>
               <meta charset="utf-8">
-              <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
               <title>Caterpillar Quest</title>
-              <style type="text/css">
-                body {
-                  padding: 0;
-                  margin: 0;
-                  background-color: black;
-                  overflow: hidden;
-                }
-                #canvas {
-                  width: 100%;
-                  height: 100%;
-                  position: absolute;
-                }
-              </style>
+              <style>body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh}</style>
             </head>
             <body>
-              <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-              <script type='text/javascript'>
-                // Simple approach - let love.js handle Module creation
-                var canvas = document.getElementById('canvas');
-                
-                // Set up game parameters
-                var Module = {
-                  arguments: ['./game.love'],
-                  canvas: canvas
-                };
-              </script>
-              <script async type="text/javascript" src="love.js"></script>
+              <canvas id="canvas" width="1024" height="768"></canvas>
+              <script>var Module={canvas:document.getElementById('canvas'),arguments:['./game.love']};</script>
+              <script src="love.js"></script>
             </body>
           </html>
           EOF
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GH_PAT }}
