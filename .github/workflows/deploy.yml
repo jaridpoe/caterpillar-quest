@@ -19,11 +19,12 @@ jobs:
       - name: Create game.love
         run: zip -r publish/game.love main.lua conf.lua *.png *.wav *.mp3 *.ogg -x ".git/*" ".github/*" "love.js/*"
 
-      - name: Copy engine files
+      - name: Copy engine files from sample (already processed)
         run: |
-          cp love.js/src/game.js publish/love.js
-          cp -r love.js/src/compat publish/
-          cp -r love.js/src/release publish/
+          cp -r love.js/sample/love.js publish/
+          cp -r love.js/sample/love.worker.js publish/ || true
+          cp -r love.js/sample/love.wasm publish/ || true
+          cp -r love.js/sample/theme publish/ || true
 
       - name: Create index.html
         run: |
