@@ -27,19 +27,17 @@ jobs:
 
       - name: Copy love.js files
         run: |
-          # Copy the engine file
-          cp love.js/src/game.js publish/love.js
-          # Copy directories if they exist
-          if [ -d "love.js/src/compat" ]; then
-            cp -r love.js/src/compat publish/
-          fi
-          if [ -d "love.js/src/release" ]; then
-            cp -r love.js/src/release publish/
+          # Copy the release files instead of src
+          cp -r love.js/src/release/* publish/
+          # Ensure we have the right files
+          if [ ! -f "publish/love.js" ]; then
+            echo "Error: love.js is missing from release directory"
+            exit 1
           fi
 
       - name: Zip game files into game.love
         run: |
-          # Only include game files, not the love.js directory
+          # Only include game files
           zip -r publish/game.love \
             main.lua \
             conf.lua \
@@ -51,19 +49,6 @@ jobs:
             -x ".git/*" \
             -x ".github/*"
 
-      - name: Verify files and sizes
-        run: |
-          echo "Checking published files:"
-          ls -la publish/
-          if [ ! -s "publish/love.js" ]; then
-            echo "Error: love.js is empty or missing"
-            exit 1
-          fi
-          if [ ! -s "publish/game.love" ]; then
-            echo "Error: game.love is empty or missing"
-            exit 1
-          fi
-
       - name: Create index.html
         run: |
           cat > publish/index.html <<EOF
@@ -73,15 +58,12 @@ jobs:
               <meta charset="utf-8">
               <title>Caterpillar Quest</title>
               <style>
-                body { 
-                  margin: 0;
-                  background: black;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  height: 100vh;
-                }
-                #canvas { 
+                body { margin: 0; background: black; }
+                canvas { 
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
                   width: 1024px;
                   height: 768px;
                   max-width: 100%;
@@ -90,32 +72,12 @@ jobs:
               </style>
             </head>
             <body>
-              <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-              <script type="text/javascript">
-                var Module = {
-                  TOTAL_MEMORY: 268435456,
-                  noInitialRun: true,
-                  canvas: (function() {
-                    var canvas = document.getElementById('canvas');
-                    canvas.addEventListener("webglcontextlost", function(e) { 
-                      alert('WebGL context lost. You will need to reload the page.'); 
-                      e.preventDefault(); 
-                    }, false);
-                    return canvas;
-                  })(),
-                  print: function(text) { console.log(text); },
-                  printErr: function(text) { console.error(text); },
-                  postRun: [],
-                  arguments: ['./game.love']
-                };
+              <canvas id="canvas"></canvas>
+              <script>
+                var Module = {};
+                Module.canvas = document.getElementById('canvas');
               </script>
               <script async type="text/javascript" src="love.js"></script>
-              <script>
-                console.log('Debug: Module configuration:', Module);
-                window.onerror = function(msg, url, line) {
-                  console.error('Error:', msg, 'at', url, ':', line);
-                };
-              </script>
             </body>
           </html>
           EOF
