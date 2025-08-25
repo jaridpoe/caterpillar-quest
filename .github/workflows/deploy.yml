@@ -11,72 +11,85 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get short commit hash
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Create publish directory
         run: mkdir -p publish
-
-      - name: Zip game files into game.love
-        run: |
-          zip -r publish/game.love . -x ".git/*" ".github/*"
 
       - name: Clone love.js
         run: git clone https://github.com/Davidobot/love.js.git
 
-      - name: Copy love.js src files into publish
+      - name: Verify love.js files exist
         run: |
-          # copy compat/, release/, game.js etc
-          cp -r love.js/src/* publish/
-          # ensure compat & release are present if they exist
-          test -d love.js/src/compat && cp -r love.js/src/compat publish/ || true
-          test -d love.js/src/release && cp -r love.js/src/release publish/ || true
+          if [ ! -f "love.js/src/game.js" ]; then
+            echo "Error: love.js/src/game.js is missing"
+            exit 1
+          fi
+          ls -l love.js/src/game.js
 
-      - name: Create index.html (Module defined before engine loads; dynamic engine fallback)
+      - name: Copy love.js files
+        run: |
+          # Copy the engine file
+          cp love.js/src/game.js publish/love.js
+          # Copy directories if they exist
+          if [ -d "love.js/src/compat" ]; then
+            cp -r love.js/src/compat publish/
+          fi
+          if [ -d "love.js/src/release" ]; then
+            cp -r love.js/src/release publish/
+          fi
+
+      - name: Zip game files into game.love
+        run: zip -r publish/game.love . -x ".git/*" ".github/*"
+
+      - name: Verify files and sizes
+        run: |
+          echo "Checking published files:"
+          ls -la publish/
+          if [ ! -s "publish/love.js" ]; then
+            echo "Error: love.js is empty or missing"
+            exit 1
+          fi
+          if [ ! -s "publish/game.love" ]; then
+            echo "Error: game.love is empty or missing"
+            exit 1
+          fi
+
+      - name: Create index.html
         run: |
           cat > publish/index.html <<EOF
           <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <title>Caterpillar Quest</title>
-            <style> html,body{height:100%;margin:0;background:#000}body{display:flex;align-items:center;justify-content:center}canvas{max-width:100%;height:auto}</style>
-            <link rel="icon" href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAA" />
-          </head>
-          <body>
-            <canvas id="canvas" width="1024" height="768"></canvas>
-            <script>
-              // Define Module BEFORE loading the engine
-              window.Module = {
-                arguments: ['./game.love'],
-                print: function(txt){ console.log(txt); },
-                printErr: function(txt){ console.error(txt); },
-                canvas: (function(){ return document.getElementById('canvas'); })()
-              };
-
-              function loadEngine(src){
-                var s = document.createElement('script');
-                s.src = src + '?v=${{ steps.vars.outputs.sha_short }}';
-                s.async = true;
-                document.head.appendChild(s);
-              }
-
-              // Try release/love.js first, fall back to game.js if not present
-              fetch('release/love.js', { method: 'HEAD' }).then(function(res){
-                if(res.ok) loadEngine('release/love.js');
-                else loadEngine('game.js');
-              }).catch(function(){
-                loadEngine('game.js');
-              });
-            </script>
-          </body>
+          <html lang="en-us">
+            <head>
+              <meta charset="utf-8">
+              <title>Caterpillar Quest</title>
+              <style>
+                body { 
+                  margin: 0;
+                  background: black;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                }
+                #canvas { 
+                  width: 1024px;
+                  height: 768px;
+                  max-width: 100%;
+                  max-height: 100vh;
+                }
+              </style>
+            </head>
+            <body>
+              <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+              <script>
+                var Module = {
+                  arguments: ['./game.love'],
+                  canvas: document.getElementById('canvas')
+                };
+              </script>
+              <script src="love.js"></script>
+            </body>
           </html>
           EOF
-
-      - name: List publish (debug)
-        run: ls -la publish || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
