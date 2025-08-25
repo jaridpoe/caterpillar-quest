@@ -27,13 +27,14 @@ jobs:
 
       - name: Copy love.js files
         run: |
-          # Copy the release files instead of src
-          cp -r love.js/src/release/* publish/
-          # Ensure we have the right files
-          if [ ! -f "publish/love.js" ]; then
-            echo "Error: love.js is missing from release directory"
-            exit 1
-          fi
+          # Copy and rename the engine file
+          cp love.js/src/game.js publish/love.js
+          # Copy required directories
+          cp -r love.js/src/compat publish/
+          cp -r love.js/src/release publish/
+          # Debug output
+          echo "Contents of publish directory:"
+          ls -la publish/
 
       - name: Zip game files into game.love
         run: |
@@ -74,32 +75,16 @@ jobs:
             <body>
               <canvas id="canvas"></canvas>
               <script>
-                // Initialize Module configuration before loading love.js
                 var Module = {
                   TOTAL_MEMORY: 268435456,
-                  noInitialRun: true,
                   canvas: (function() {
                     var canvas = document.getElementById('canvas');
-                    canvas.addEventListener("webglcontextlost", function(e) {
-                      alert('WebGL context lost. You will need to reload the page.');
-                      e.preventDefault();
-                    }, false);
                     return canvas;
                   })(),
-                  print: function(text) { console.log('[LOVE]:', text); },
-                  printErr: function(text) { console.error('[LOVE]:', text); },
-                  postRun: [],
-                  arguments: ['./game.love'],
-                  monitorRunDependencies: function(left) {
-                    if (left == 0) {
-                      console.log('[LOVE]: Starting game...');
-                    } else {
-                      console.log('[LOVE]: Waiting for', left, 'dependencies...');
-                    }
-                  }
+                  arguments: ['./game.love']
                 };
               </script>
-              <script src="release/love.js"></script>
+              <script src="love.js"></script>
             </body>
           </html>
           EOF
