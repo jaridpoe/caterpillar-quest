@@ -34,7 +34,6 @@ jobs:
             <head>
               <meta charset="utf-8">
               <title>Caterpillar Quest</title>
-              <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" />
               <style>
                 body { 
                   margin: 0;
@@ -45,28 +44,29 @@ jobs:
                   height: 100vh;
                 }
                 #canvas { 
-                  max-width: 100%;
-                  max-height: 100%;
+                  max-width: 800px;
+                  max-height: 600px;
+                  width: 100%;
+                  height: 100%;
                 }
               </style>
             </head>
             <body>
-              <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+              <canvas id="canvas"></canvas>
               <script type="text/javascript">
-                // Initialize Module before loading game.js
                 var Module = {
-                  TOTAL_MEMORY: 268435456,
-                  arguments: ["./game.love"],
-                  printErr: function(text) { console.error(text); },
-                  canvas: document.getElementById('canvas'),
-                  noInitialRun: true,
-                  noExitRuntime: true,
-                  preRun: [],
-                  postRun: [],
-                  print: function(text) { console.log(text); }
+                  arguments: ['./game.love'],
+                  canvas: (function() {
+                    var canvas = document.getElementById('canvas');
+                    canvas.addEventListener("webglcontextlost", function(e) { 
+                      alert('WebGL context lost. You will need to reload the page.'); 
+                      e.preventDefault(); 
+                    }, false);
+                    return canvas;
+                  })()
                 };
               </script>
-              <script type="text/javascript" src="release/love.js"></script>
+              <script async type="text/javascript" src="game.js"></script>
             </body>
           </html>
           EOF
