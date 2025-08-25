@@ -109,7 +109,13 @@ jobs:
                   arguments: ['./game.love']
                 };
               </script>
-              <script async type="text/javascript" src="release/love.js"></script>
+              <script async type="text/javascript" src="love.js"></script>
+              <script>
+                console.log('Debug: Module configuration:', Module);
+                window.onerror = function(msg, url, line) {
+                  console.error('Error:', msg, 'at', url, ':', line);
+                };
+              </script>
             </body>
           </html>
           EOF
