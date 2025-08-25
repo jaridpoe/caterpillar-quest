@@ -32,14 +32,35 @@ jobs:
 
       - name: Build web version
         run: |
-          # Modify the build script to not try sourcing emsdk_env.sh (already set by the GitHub Action)
+          # Print the build script for debugging
+          echo "Content of build_lovejs.sh before modification:"
+          cat love.js/build_lovejs.sh
+          
+          # Fix ALL possible paths to emsdk_env.sh in the script
           sed -i 's|source ../publish/emsdk_env.sh|# Environment already set by GitHub Action|g' love.js/build_lovejs.sh
+          sed -i 's|source ../build/web/emsdk_env.sh|# Environment already set by GitHub Action|g' love.js/build_lovejs.sh
+          sed -i 's|source .*/emsdk_env.sh|# Environment already set by GitHub Action|g' love.js/build_lovejs.sh
+          
+          # Print the modified script
+          echo "Content of build_lovejs.sh after modification:"
+          cat love.js/build_lovejs.sh
           
           # Make the build script executable
           chmod +x love.js/build_lovejs.sh
           
           # Run the build script with our game.love file
           cd love.js
+          
+          # Export emscripten environment variables explicitly
+          export EMSCRIPTEN_ROOT=$EMSDK/upstream/emscripten
+          export EM_CONFIG=$HOME/.emscripten
+          export EM_CACHE=$HOME/.emscripten_cache
+          
+          echo "Running build_lovejs.sh with environment:"
+          echo "EMSCRIPTEN_ROOT: $EMSCRIPTEN_ROOT"
+          echo "EMSDK: $EMSDK"
+          
+          # Run the script with detailed error output
           ./build_lovejs.sh ../build/game.love ../build/web
 
       - name: Create custom index.html
