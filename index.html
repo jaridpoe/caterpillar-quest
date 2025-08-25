@@ -4,15 +4,12 @@
     <meta charset="utf-8">
     <title>Caterpillar Quest</title>
     <style>
-      body { 
-        margin: 0;
-        background: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-      #canvas { 
+      body { margin: 0; background: black; }
+      canvas { 
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         width: 1024px;
         height: 768px;
         max-width: 100%;
@@ -21,31 +18,11 @@
     </style>
   </head>
   <body>
-    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    <script type="text/javascript">
-      var Module = {
-        TOTAL_MEMORY: 268435456,
-        noInitialRun: true,
-        canvas: (function() {
-          var canvas = document.getElementById('canvas');
-          canvas.addEventListener("webglcontextlost", function(e) { 
-            alert('WebGL context lost. You will need to reload the page.'); 
-            e.preventDefault(); 
-          }, false);
-          return canvas;
-        })(),
-        print: function(text) { console.log(text); },
-        printErr: function(text) { console.error(text); },
-        postRun: [],
-        arguments: ['./game.love']
-      };
+    <canvas id="canvas"></canvas>
+    <script>
+      var Module = {};
+      Module.canvas = document.getElementById('canvas');
     </script>
     <script async type="text/javascript" src="love.js"></script>
-    <script>
-      console.log('Debug: Module configuration:', Module);
-      window.onerror = function(msg, url, line) {
-        console.error('Error:', msg, 'at', url, ':', line);
-      };
-    </script>
   </body>
 </html>
