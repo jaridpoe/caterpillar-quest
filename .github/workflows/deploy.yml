@@ -38,7 +38,18 @@ jobs:
           fi
 
       - name: Zip game files into game.love
-        run: zip -r publish/game.love . -x ".git/*" ".github/*"
+        run: |
+          # Only include game files, not the love.js directory
+          zip -r publish/game.love \
+            main.lua \
+            conf.lua \
+            *.png \
+            *.wav \
+            *.mp3 \
+            *.ogg \
+            -x "love.js/*" \
+            -x ".git/*" \
+            -x ".github/*"
 
       - name: Verify files and sizes
         run: |
