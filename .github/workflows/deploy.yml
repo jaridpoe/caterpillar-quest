@@ -21,17 +21,30 @@ jobs:
       
       - name: Setup Emscripten
         uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.37  # Specify a version that works with love.js
 
       - name: Process love.js src files
         run: |
-          # Navigate to love.js directory
+          # Find where emscripten is installed by the GitHub Action
+          which emcc
+          
+          # Create a temporary wrapper script to fix the build process
+          cat > build_wrapper.sh <<EOF
+          #!/bin/bash
+          # Skip the emsdk_env.sh sourcing in the original script
           cd love.js
-          # Make the build script executable
+          sed -i 's|source ../publish/emsdk_env.sh|# Already sourced by GitHub Action|g' build_lovejs.sh
           chmod +x build_lovejs.sh
-          # Run the build script, targeting the game.love file
           ./build_lovejs.sh ../publish/game.love ../publish
+          EOF
+          
+          # Make it executable and run it
+          chmod +x build_wrapper.sh
+          ./build_wrapper.sh
+          
           # List the generated files
-          ls -la ../publish
+          ls -la publish/
 
       - name: Create index.html
         run: |
