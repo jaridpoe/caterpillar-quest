@@ -18,13 +18,20 @@ jobs:
 
       - name: Create game.love
         run: zip -r publish/game.love main.lua conf.lua *.png *.wav *.mp3 *.ogg -x ".git/*" ".github/*" "love.js/*"
+      
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
 
-      - name: Copy engine files from sample (already processed)
+      - name: Process love.js src files
         run: |
-          cp -r love.js/sample/love.js publish/
-          cp -r love.js/sample/love.worker.js publish/ || true
-          cp -r love.js/sample/love.wasm publish/ || true
-          cp -r love.js/sample/theme publish/ || true
+          # Navigate to love.js directory
+          cd love.js
+          # Make the build script executable
+          chmod +x build_lovejs.sh
+          # Run the build script, targeting the game.love file
+          ./build_lovejs.sh ../publish/game.love ../publish
+          # List the generated files
+          ls -la ../publish
 
       - name: Create index.html
         run: |
@@ -38,7 +45,7 @@ jobs:
             </head>
             <body>
               <canvas id="canvas" width="1024" height="768"></canvas>
-              <script>var Module={canvas:document.getElementById('canvas'),arguments:['./game.love']};</script>
+              <script>var Module={canvas:document.getElementById('canvas')};</script>
               <script src="love.js"></script>
             </body>
           </html>
